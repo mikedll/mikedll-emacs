@@ -1,14 +1,34 @@
-;;
-;; Mike De La Loza
-;; email: mikedll@mikedll.com
-;; web: mikedll.com
-;;
 
 (defun curli (url)
   "Inserts the results of a curl call into the buffer.
   This could be replaced with url.el stuff"
   (let ((cookie (concat emacs-dir "/data/mainCookieJar.dat")))
     (call-process "curl.exe" nil t nil "-b" cookie "-c" cookie "-s" url)))
+
+(defun curl-again ()
+  "Run curl with the given config. Requires you to be in a local directory."
+  (interactive)
+  (shell-command "curl --config curl_config.conf"  nil nil)
+  (with-current-buffer (find-file-noselect "response.xml")
+    )
+  (display-buffer "response.xml"))
+
+(defun read-from-region-or-prompt (prompt default-list)
+  "Uses ido completing read to get info from user."
+  (cond ((use-region-p) (buffer-substring (region-beginning) (region-end)))
+	(t (ido-completing-read prompt default-list))))
+
+(defun directory-basenames (path)
+  " Returns list of files in a directory. 
+Does not include '.' and '..' symbols. 
+Does not include full paths"
+  (let* ((files (directory-files path))
+         (remaining files))    
+    (dolist (f files)
+      (message f)
+      (if (or (string= "." f) (string= ".." f))
+          (setq remaining (delete f remaining))))
+    remaining))
 
 (defun find-root-dir-by-pattern (pattern dir &optional last-dir)
   "Returns dir if it contains a file matching pattern. Else, returns to the

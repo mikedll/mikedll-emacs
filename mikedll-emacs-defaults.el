@@ -1,9 +1,4 @@
 ;;
-;; Mike De La Loza
-;; email: mikedll@mikedll.com
-;; web: mikedll.com
-;;
-;;
 ;; These settings are to separate emacs from its stupid default
 ;; behavior that I happen to disagree with. Like
 ;; disabling "happy menu icons" and the like.
@@ -25,8 +20,16 @@
 (setq inhibit-startup-screen t)
 
 ;; Kill menu, tool bar, and scroll bar
-(menu-bar-mode)
-(tool-bar-mode)
+
+(cond ((< emacs-major-version 24)
+       (menu-bar-mode)
+       (tool-bar-mode))
+      (t
+       (custom-set-variables
+        '(menu-bar-mode nil)
+        '(tool-bar-mode nil))))
+
+
 (set-window-scroll-bars (minibuffer-window) nil)
 
 
@@ -51,3 +54,26 @@
   )
 
 (if (is-osx) (fix-tramp))
+
+(require 'package)
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
+  ;; (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (when (< emacs-major-version 24)
+    ;; For important compatibility libraries like cl-lib
+    (add-to-list 'package-archives '("gnu" . (concat proto "://elpa.gnu.org/packages/")))))
+(package-initialize)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (web-mode magit vue-mode rjsx-mode php-mode sass-mode))))
+
+
